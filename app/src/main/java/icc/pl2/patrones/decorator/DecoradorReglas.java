@@ -3,7 +3,7 @@ package icc.pl2.patrones.decorator;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Decorador abstracto: envuelve otras reglas, delega y agrega una duración. */
+
 public abstract class DecoradorReglas implements ReglasJuego {
     protected ReglasJuego envuelto;
     private final long duracionMs;
