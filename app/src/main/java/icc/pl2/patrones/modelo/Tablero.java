@@ -6,6 +6,9 @@ public class Tablero {
     private final int filas;
 
     public Tablero(int columnas, int filas) { this.columnas = columnas; this.filas = filas; }
+    
+
+    
 
     public int columnas() {
         return columnas;

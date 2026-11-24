@@ -1,34 +1,42 @@
 package icc.pl2.patrones.juego;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import icc.pl2.patrones.patronadicional.Comida;
+import icc.pl2.patrones.decorator.ReglasJuego;
 import icc.pl2.patrones.modelo.Direccion;
 import icc.pl2.patrones.modelo.Posicion;
 import icc.pl2.patrones.modelo.Serpiente;
 import icc.pl2.patrones.modelo.Tablero;
-import icc.pl2.patrones.state.Pausado;
+import icc.pl2.patrones.patronadicional.Comida;
+import icc.pl2.patrones.patronadicional.ComidaFruta;
+import icc.pl2.patrones.state.EstadoPartida;
 import icc.pl2.patrones.state.Preparado;
-import icc.pl2.patrones.state.Terminado ;
+import icc.pl2.patrones.state.Terminado;
 
 public class Partida {
     public static final int PUNTOS_POR_COMIDA = 10;
     public static final int INTERVALO_MS = 150;
     private static final int LONGITUD_INICIAL = 3;
+    private static final int FRUTAS_PARA_CRECER = 1;
+    private static final int SEGMENTOS_POR_CRECIMIENTO = 1;
 
     private final Tablero tablero;
+    private final ReglasJuego reglasBase;
     private final Random azar = new Random();
 
     private Serpiente serpiente;
     private Comida comida;
     private EstadoPartida estado;
+    private ReglasJuego reglas;
     private int puntaje;
     private String mensaje;
 
-    public Partida(Tablero tablero) {
+    public Partida(Tablero tablero, ReglasJuego reglasBase) {
         this.tablero = tablero;
+        this.reglasBase = reglasBase;
         restaurar();
         this.estado = new Preparado();
     }
@@ -58,29 +66,39 @@ public class Partida {
     }
 
     public void restaurar() {
-        Posicion cabeza = new Posicion(tablero.ancho() / 2, tablero.alto() / 2);
-        serpiente = new Serpiente(cabeza, Direccion.DERECHA, LONGITUD_INICIAL);
+        int inicioX = tablero.columnas() / 2;
+        int inicioY = tablero.filas() / 2;
+        List<Posicion> inicial = new ArrayList<>();
+        for (int i = 0; i < LONGITUD_INICIAL; i++) {
+            inicial.add(new Posicion(inicioX - i, inicioY));
+        }
+        serpiente = new Serpiente(inicial, Color.GREEN, FRUTAS_PARA_CRECER, SEGMENTOS_POR_CRECIMIENTO);
+        reglas = reglasBase;
         puntaje = 0;
         mensaje = "Partida lista. Presiona Iniciar.";
         generarComida();
     }
 
     public boolean hayColision(Posicion destino) {
-        return !tablero.contiene(destino) || serpiente.colisionaConCuerpo(destino);
+        return !tablero.dentro(destino) || serpiente.chocaCon(destino);
     }
 
     public void avanzarSerpiente() {
         Posicion destino = serpiente.siguienteCabeza();
         boolean come = comida != null && comida.posicion().equals(destino);
 
-        serpiente.avanzar(come);
-
         if (come) {
-            puntaje += comida.puntos();
-            mensaje = "Comiste (+" + comida.puntos() + ").";
-            if (!generarComida()) {
-                terminar("Tablero completo: ¡ganaste!");
-            }
+            serpiente.alComer();
+            int puntos = comida.puntosBase();
+            puntaje += puntos;
+            reglas = comida.aplicarEfecto(reglas);
+            mensaje = "Comiste " + comida.nombre() + " (+" + puntos + ").";
+        }
+
+        serpiente.avanzar(destino);
+
+        if (come && !generarComida()) {
+            terminar("Tablero completo: ¡ganaste!");
         }
     }
 
@@ -91,8 +109,8 @@ public class Partida {
 
     private boolean generarComida() {
         List<Posicion> libres = new ArrayList<>();
-        for (int x = 0; x < tablero.ancho(); x++) {
-            for (int y = 0; y < tablero.alto(); y++) {
+        for (int x = 0; x < tablero.columnas(); x++) {
+            for (int y = 0; y < tablero.filas(); y++) {
                 Posicion p = new Posicion(x, y);
                 if (!serpiente.ocupa(p)) {
                     libres.add(p);
@@ -103,7 +121,8 @@ public class Partida {
             comida = null;
             return false;
         }
-        comida = new Comida(libres.get(azar.nextInt(libres.size())), PUNTOS_POR_COMIDA);
+        Posicion posAleatoria = libres.get(azar.nextInt(libres.size()));
+        comida = new ComidaFruta(posAleatoria, "Fruta", PUNTOS_POR_COMIDA, Color.RED);
         return true;
     }
 
@@ -134,6 +153,10 @@ public class Partida {
 
     public Comida comida() {
         return comida;
+    }
+
+    public ReglasJuego reglas() {
+        return reglas;
     }
 
     public int puntaje() {
