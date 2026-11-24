@@ -8,8 +8,12 @@ public enum Direccion {
 
     Direccion(int dx, int dy) { this.dx = dx; this.dy = dy; }
 
-    public int dx() { return dx; }
-    public int dy() { return dy; }
+    public int dx() {
+        return dx;
+    }
+    public int dy() {
+        return dy;
+    }
 
     public Direccion opuesta() {
         return switch (this) {

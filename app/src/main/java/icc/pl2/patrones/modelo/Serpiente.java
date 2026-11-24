@@ -22,12 +22,24 @@ public class Serpiente {
         this.frutasParaCrecer = frutasParaCrecer;
     }
 
-    public Posicion cabeza() { return cuerpo.peekFirst(); }
-    public Iterable<Posicion> segmentos() { return cuerpo; }
-    public int longitud() { return cuerpo.size(); }
-    public boolean ocupa(Posicion p) { return cuerpo.contains(p); }
-    public Color color() { return color; }
-    public void setColor(Color color) { this.color = color; }
+    public Posicion cabeza() {
+        return cuerpo.peekFirst(); 
+    }
+    public Iterable<Posicion> segmentos() {
+        return cuerpo; 
+    }
+    public int longitud() {
+        return cuerpo.size(); 
+    }
+    public boolean ocupa(Posicion p) {
+        return cuerpo.contains(p); 
+    }
+    public Color color() {
+        return color; 
+    }
+    public void setColor(Color color) {
+        this.color = color; 
+    }
 
 
     public void cambiarDireccion(Direccion nueva) {

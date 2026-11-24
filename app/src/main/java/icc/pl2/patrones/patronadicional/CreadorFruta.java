@@ -1,1 +1,0 @@
-package icc.pl2.patrones.patronadicional;

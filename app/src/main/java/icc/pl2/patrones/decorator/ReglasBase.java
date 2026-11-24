@@ -10,30 +10,33 @@ public class ReglasBase implements ReglasJuego {
 
     @Override
     public int puntos(int base) {
-         return base; 
-        }
+        return base;
+    }
+
     @Override
     public int intervaloMs() {
-         return intervaloMs; 
-        }
+        return intervaloMs; 
+    }
+
     @Override
     public void tick(long ms) {
-
     }
+
     @Override
     public ReglasJuego limpiar() {
-         return this; 
-        }
-    @Override
-    public void renovar(Class<? extends ReglasJuego> tipo) {
-        
+        return this; 
     }
+
+    @Override
+    public void renovar(Class<? extends ReglasJuego> tipo) {    
+    }
+
     @Override
     public boolean tiene(Class<? extends ReglasJuego> tipo) {
-         return false; 
-        }
+        return false;
+    }
     @Override
     public List<String> efectos() {
-         return new ArrayList<>(); 
-        }
+        return new ArrayList<>();
+    }
 }

@@ -4,7 +4,8 @@ public class DecoradorPuntuacionDoble extends DecoradorReglas {
 
     public static final long DURACION_MS = 10_000;
 
-    public DecoradorPuntuacionDoble(ReglasJuego envuelto) { super(envuelto, DURACION_MS);
+    public DecoradorPuntuacionDoble(ReglasJuego envuelto) {
+        super(envuelto, DURACION_MS);
         
     }
 
