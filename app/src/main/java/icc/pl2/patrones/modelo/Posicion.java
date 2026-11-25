@@ -8,27 +8,24 @@ public final class Posicion {
 
     public Posicion(int x, int y) {
         this.x = x;
-        this.y = y; 
-
+        this.y = y;
     }
 
-    public int x(){
+    public int x() {
         return x;
     }
 
     public int y() {
         return y;
     }
-     
-    @Override 
 
-    public boolean equals(Object o ){
-        if(this == o){
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
-
-        } if(!(o instanceof Posicion)) {
+        }
+        if (!(o instanceof Posicion)) {
             return false;
-            
         }
         Posicion p = (Posicion) o;
         return x == p.x && y == p.y;
@@ -36,12 +33,11 @@ public final class Posicion {
 
     @Override
     public int hashCode() {
-        return Objects.hash();
+        return Objects.hash(x, y);
     }
 
     @Override
     public String toString() {
         return "(" + x + ", " + y + ")";
     }
-    
 }

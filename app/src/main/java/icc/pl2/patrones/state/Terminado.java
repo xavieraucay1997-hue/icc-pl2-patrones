@@ -1,8 +1,8 @@
 package icc.pl2.patrones.state;
 
-
 import icc.pl2.patrones.juego.Partida;
 import icc.pl2.patrones.modelo.Direccion;
+import icc.pl2.patrones.patronadicional.CreadorComida;
 
 public class Terminado implements EstadoPartida {
     @Override
@@ -37,5 +37,9 @@ public class Terminado implements EstadoPartida {
 
     @Override
     public void cambiarDireccion(Partida partida, Direccion direccion) {
+    }
+
+    @Override
+    public void ubicarComida(Partida partida, int x, int y, CreadorComida creador) {
     }
 }

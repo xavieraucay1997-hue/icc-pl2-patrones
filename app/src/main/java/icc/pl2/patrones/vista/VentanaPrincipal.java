@@ -9,16 +9,22 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -27,6 +33,7 @@ import icc.pl2.patrones.decorator.ReglasBase;
 import icc.pl2.patrones.juego.Partida;
 import icc.pl2.patrones.modelo.Direccion;
 import icc.pl2.patrones.modelo.Tablero;
+import icc.pl2.patrones.patronadicional.CreadorComida;
 
 public class VentanaPrincipal extends JFrame {
     private static final int COLUMNAS_INICIALES = 20;
@@ -38,10 +45,17 @@ public class VentanaPrincipal extends JFrame {
 
     private final JLabel lblEstado = new JLabel();
     private final JLabel lblPuntaje = new JLabel();
+    private final JLabel lblEfectos = new JLabel("Sin efectos");
     private final JLabel lblMensaje = new JLabel();
+
+    private final JComboBox<CreadorComida> cmbTipoComida = new JComboBox<>(Partida.creadoresDisponibles());
+    private final JTextField txtX = new JTextField(4);
+    private final JTextField txtY = new JTextField(4);
 
     public VentanaPrincipal() {
         super("SnakeLab · Minijuego");
+        configurarIcono();
+
         partida = new Partida(
                 new Tablero(COLUMNAS_INICIALES, FILAS_INICIALES),
                 new ReglasBase(Partida.INTERVALO_MS));
@@ -61,6 +75,13 @@ public class VentanaPrincipal extends JFrame {
         panelTablero.requestFocusInWindow();
     }
 
+    private void configurarIcono() {
+        URL iconUrl = getClass().getResource("/snake-icono.png");
+        if (iconUrl != null) {
+            setIconImage(new ImageIcon(iconUrl).getImage());
+        }
+    }
+
     private void construirInterfaz() {
         JPanel lateral = new JPanel(new GridBagLayout());
         lateral.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -69,7 +90,7 @@ public class VentanaPrincipal extends JFrame {
         lblMensaje.setPreferredSize(new Dimension(260, 60));
         lblMensaje.setVerticalAlignment(SwingConstants.TOP);
 
-        JPanel[] grupos = { panelPartida(), panelPuntuacion(), panelMensaje() };
+        JPanel[] grupos = { panelPartida(), panelPuntuacion(), panelGenerarComida(), panelMensaje() };
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.weightx = 1;
@@ -115,8 +136,45 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private JPanel panelPuntuacion() {
-        JPanel p = grupo("Puntuación");
+        JPanel p = grupo("Puntuación y efectos");
         p.add(lblPuntaje);
+        p.add(lblEfectos);
+        alinear(p);
+        return p;
+    }
+
+    private JPanel panelGenerarComida() {
+        JPanel p = grupo("Generar comida");
+
+        cmbTipoComida.setFocusable(false);
+        cmbTipoComida.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof CreadorComida creador) {
+                    setText(creador.nombre());
+                }
+                return this;
+            }
+        });
+
+        JPanel coords = new JPanel(new GridLayout(1, 4, 4, 4));
+        coords.add(new JLabel("X:", JLabel.RIGHT));
+        coords.add(txtX);
+        coords.add(new JLabel("Y:", JLabel.RIGHT));
+        coords.add(txtY);
+
+        JPanel acciones = new JPanel(new GridLayout(1, 2, 4, 4));
+        acciones.add(boton("Ubicar comida", this::accionUbicarComida));
+        acciones.add(boton("Generar aleatoria", () -> partida.generarAleatoria(tipoSeleccionado())));
+
+        p.add(new JLabel("Tipo:"));
+        p.add(cmbTipoComida);
+        p.add(Box.createVerticalStrut(4));
+        p.add(coords);
+        p.add(Box.createVerticalStrut(4));
+        p.add(acciones);
         alinear(p);
         return p;
     }
@@ -126,6 +184,23 @@ public class VentanaPrincipal extends JFrame {
         p.add(lblMensaje);
         alinear(p);
         return p;
+    }
+
+    private CreadorComida tipoSeleccionado() {
+        CreadorComida seleccionado = (CreadorComida) cmbTipoComida.getSelectedItem();
+        return seleccionado != null ? seleccionado : Partida.creadoresDisponibles()[0];
+    }
+
+    private void accionUbicarComida() {
+        String textoX = txtX.getText().trim();
+        String textoY = txtY.getText().trim();
+        try {
+            int x = Integer.parseInt(textoX);
+            int y = Integer.parseInt(textoY);
+            partida.ubicarComida(x, y, tipoSeleccionado());
+        } catch (NumberFormatException ex) {
+            partida.rechazar("Operación inválida: X e Y deben ser números enteros.");
+        }
     }
 
     private void alinear(JPanel grupo) {
@@ -179,6 +254,8 @@ public class VentanaPrincipal extends JFrame {
     private void refrescar() {
         lblEstado.setText("Estado actual: " + partida.estado().nombre());
         lblPuntaje.setText(partida.puntaje() + " puntos");
+        var efectos = partida.reglas().efectos();
+        lblEfectos.setText(efectos.isEmpty() ? "Sin efectos" : String.join(" | ", efectos));
         lblMensaje.setText("<html><body style='width:240px'>" + partida.mensaje() + "</body></html>");
         panelTablero.repaint();
     }
